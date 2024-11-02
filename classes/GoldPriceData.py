@@ -15,3 +15,20 @@ class GoldPriceData:
         self.sell_differ = sell_differ
         self.sell_differ_value = sell_differ_value
         self.group_date = group_date
+
+    @staticmethod
+    def from_json(json_data: dict) -> 'GoldPriceData':
+        return GoldPriceData(
+            price_data_id=json_data['Id'],
+            type_name=json_data['TypeName'],
+            branch_name=json_data['BranchName'],
+            buy=json_data['Buy'],
+            buy_value=json_data['BuyValue'],
+            sell=json_data['Sell'],
+            sell_value=json_data['SellValue'],
+            buy_differ=json_data['BuyDiffer'],
+            buy_differ_value=json_data['BuyDifferValue'],
+            sell_differ=json_data['SellDiffer'],
+            sell_differ_value=json_data['SellDifferValue'],
+            group_date=json_data['GroupDate']
+        )
