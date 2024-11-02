@@ -1,10 +1,11 @@
+from datetime import datetime
 from typing import List
 import json
 from classes.GoldPriceData import GoldPriceData
 import requests
 
 class ApiEndpoints:
-    ALL_CURRENT_GOLD_PRICES = 'https://sjc.com.vn/GoldPrice/Services/PriceService.ashx'
+    SJC_GOLD_PRICE_SERVICE = 'https://sjc.com.vn/GoldPrice/Services/PriceService.ashx'
 
 class ApiResponseError:
     def __init__(self, status_code: int, error: str):
@@ -23,21 +24,18 @@ class AllCurrentGoldPricesResponse:
 
     @staticmethod
     def from_json(json_data: dict) -> 'AllCurrentGoldPricesResponse':
-        data = [GoldPriceData(
-            price_data_id=item['Id'],
-            type_name=item['TypeName'],
-            branch_name=item['BranchName'],
-            buy=item['Buy'],
-            buy_value=item['BuyValue'],
-            sell=item['Sell'],
-            sell_value=item['SellValue'],
-            buy_differ=item['BuyDiffer'],
-            buy_differ_value=item['BuyDifferValue'],
-            sell_differ=item['SellDiffer'],
-            sell_differ_value=item['SellDifferValue'],
-            group_date=item['GroupDate']
-        ) for item in json_data['data']]
+        data = [GoldPriceData.from_json(item) for item in json_data['data']]
         return AllCurrentGoldPricesResponse(success=json_data['success'], latest_date=json_data['latestDate'], data=data)
+
+class GoldPriceHistoryResponse:
+    def __init__(self, success: bool, data: List[GoldPriceData]):
+        self.success = success
+        self.data = data
+
+    @staticmethod
+    def from_json(json_data: dict) -> 'GoldPriceHistoryResponse':
+        data = [GoldPriceData.from_json(item) for item in json_data['data']]
+        return GoldPriceHistoryResponse(success=json_data['success'], data=data)
 
 class PriceApi:
     def __init__(self, endpoints: ApiEndpoints, get_all_current_gold_prices: AllCurrentGoldPricesResponse | ApiResponseError):
@@ -46,7 +44,7 @@ class PriceApi:
 
     @staticmethod
     def get_all_current_gold_prices() -> AllCurrentGoldPricesResponse | ApiResponseError:
-        response = requests.get(ApiEndpoints.ALL_CURRENT_GOLD_PRICES)
+        response = requests.post(ApiEndpoints.SJC_GOLD_PRICE_SERVICE)
         try:
             parsed_response = response.json()
         except json.decoder.JSONDecodeError:
@@ -55,5 +53,25 @@ class PriceApi:
         if response.status_code == 200 and parsed_response['success']:
             json_data = parsed_response
             return AllCurrentGoldPricesResponse.from_json(json_data)
+        else:
+            return ApiResponseError(status_code=500, error='There was an error connecting to the API')
+
+    @staticmethod
+    def get_gold_price_history(gold_price_id: int, from_date: datetime, to_date: datetime) -> GoldPriceHistoryResponse | ApiResponseError:
+        form_data = {
+            'method': 'GetGoldPriceHistory',
+            'goldPriceId': gold_price_id,
+            'fromDate': from_date.strftime('%d/%m/%Y'),
+            'toDate': to_date.strftime('%d/%m/%Y')
+        }
+        response = requests.post(ApiEndpoints.SJC_GOLD_PRICE_SERVICE, data=form_data)
+        try:
+            parsed_response = response.json()
+        except json.decoder.JSONDecodeError:
+            return ApiResponseError(status_code=500, error='There was an error connecting to the API')
+
+        if response.status_code == 200 and parsed_response['success']:
+            json_data = parsed_response
+            return GoldPriceHistoryResponse.from_json(json_data)
         else:
             return ApiResponseError(status_code=500, error='There was an error connecting to the API')
