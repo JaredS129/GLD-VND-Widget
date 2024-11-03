@@ -1,12 +1,10 @@
-import re
-
 from classes.PriceApi import PriceApi, ApiResponseError, AllCurrentGoldPricesResponse, GoldPriceHistoryResponse
 import ttkbootstrap as ttk
 from ttkbootstrap.tableview import Tableview
 from ttkbootstrap.constants import *
 from datetime import datetime, timedelta
 
-app = ttk.Window()
+app = ttk.Window(themename='darkly')
 colors = app.style.colors
 
 col_data = [
@@ -44,7 +42,6 @@ table = Tableview(
     coldata=col_data,
     rowdata=row_data,
     bootstyle=PRIMARY,
-    stripecolor=(colors.light, None),
 )
 
 table.pack(fill=BOTH, expand=YES, padx=10, pady=10)
