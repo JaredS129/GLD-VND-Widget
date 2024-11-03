@@ -1,7 +1,9 @@
+from datetime import datetime
 from typing import Optional
+from utils.get_datetime_from_group_date_string import get_datetime_from_group_date_string
 
 class GoldPriceData:
-    def __init__(self, price_data_id: int, type_name: str, branch_name: str, buy: str, buy_value: float, sell: str, sell_value: float, buy_differ: Optional[str], buy_differ_value: float, sell_differ: Optional[str], sell_differ_value: float, group_date: str):
+    def __init__(self, price_data_id: int, type_name: str, branch_name: str, buy: str, buy_value: float, sell: str, sell_value: float, buy_differ: Optional[str], buy_differ_value: float, sell_differ: Optional[str], sell_differ_value: float, date: datetime):
         self.price_data_id = price_data_id
         self.type_name = type_name
         self.branch_name = branch_name
@@ -14,7 +16,7 @@ class GoldPriceData:
         self.buy_differ_value = buy_differ_value
         self.sell_differ = sell_differ
         self.sell_differ_value = sell_differ_value
-        self.group_date = group_date
+        self.date = date
 
     @staticmethod
     def from_json(json_data: dict) -> 'GoldPriceData':
@@ -30,5 +32,5 @@ class GoldPriceData:
             buy_differ_value=json_data['BuyDifferValue'],
             sell_differ=json_data['SellDiffer'],
             sell_differ_value=json_data['SellDifferValue'],
-            group_date=json_data['GroupDate']
+            date=get_datetime_from_group_date_string(json_data['GroupDate'])
         )
