@@ -34,3 +34,6 @@ class GoldPriceData:
             sell_differ_value=json_data['SellDifferValue'],
             date=get_datetime_from_group_date_string(json_data['GroupDate'])
         )
+
+    def __iter__(self):
+        return iter([self.price_data_id, self.type_name, self.branch_name, self.buy, self.buy_value, self.sell, self.sell_value, self.buy_differ, self.buy_differ_value, self.sell_differ, self.sell_differ_value, self.date])
