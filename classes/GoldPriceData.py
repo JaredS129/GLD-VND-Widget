@@ -1,6 +1,6 @@
-import re
 from datetime import datetime
 from typing import Optional
+from utils.get_datetime_from_group_date_string import get_datetime_from_group_date_string
 
 class GoldPriceData:
     def __init__(self, price_data_id: int, type_name: str, branch_name: str, buy: str, buy_value: float, sell: str, sell_value: float, buy_differ: Optional[str], buy_differ_value: float, sell_differ: Optional[str], sell_differ_value: float, date: datetime):
@@ -32,5 +32,5 @@ class GoldPriceData:
             buy_differ_value=json_data['BuyDifferValue'],
             sell_differ=json_data['SellDiffer'],
             sell_differ_value=json_data['SellDifferValue'],
-            date=datetime.fromtimestamp(int(int(re.search(r'\d+', json_data['GroupDate']).group()) / 1000))
+            date=get_datetime_from_group_date_string(json_data['GroupDate'])
         )

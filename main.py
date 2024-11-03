@@ -17,7 +17,7 @@ col_data = [
 
 row_data = []
 
-# all_current_gold_prices = PriceApi.get_all_current_gold_prices()
+all_current_gold_prices = PriceApi.get_all_current_gold_prices()
 
 to_date = datetime.now()
 from_date = datetime.now() - timedelta(days=89)
@@ -25,13 +25,14 @@ gold_price_id = 81
 
 gold_price_history = PriceApi.get_gold_price_history(gold_price_id, from_date, to_date)
 
-# if isinstance(all_current_gold_prices, AllCurrentGoldPricesResponse):
-#     print('Fetched current gold prices successfully')
-#
-# if isinstance(all_current_gold_prices, ApiResponseError):
-#     print(all_current_gold_prices.error)
+if isinstance(all_current_gold_prices, AllCurrentGoldPricesResponse):
+    print('Fetched current gold prices successfully')
+
+if isinstance(all_current_gold_prices, ApiResponseError):
+    print(all_current_gold_prices.error)
 
 if isinstance(gold_price_history, GoldPriceHistoryResponse):
+    print('Fetched gold price history successfully')
     for data in gold_price_history.data:
         row_data.append([data.date, data.buy_value, data.sell_value])
 
