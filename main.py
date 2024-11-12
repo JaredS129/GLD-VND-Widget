@@ -1,3 +1,5 @@
+from tkinter import Label
+
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -59,8 +61,8 @@ graph_frame = Figure(figsize=(7, 4), dpi=100)
 line_graph = graph_frame.add_subplot(111)
 
 # Plot the buy and sell values
-line_graph.plot(dates, buy_values, label='Buy', color=colors.success)
-line_graph.plot(dates, sell_values, label='Sell', color=colors.danger)
+line_graph.plot(dates, buy_values, label='Mua vào', color=colors.danger)
+line_graph.plot(dates, sell_values, label='Bán ra', color=colors.success)
 
 # Format the chart
 line_graph.set_title(f"{gold_price_history.data[0].branch_name}: {gold_price_history.data[0].type_name} - 90 ngày qua", color=colors.light)
@@ -90,7 +92,7 @@ annotation.set_visible(False)
 def update_annotation(x_value):
     texts = [f"{x_value}"]
     for line in line_graph.get_lines():
-        if line.get_label() in ["Buy", "Sell"]:
+        if line.get_label() in ["Mua vào", "Bán ra"]:
             x, y = line.get_data()
             if x_value in x:
                 index = list(x).index(x_value)
@@ -103,6 +105,7 @@ def update_annotation(x_value):
             line.remove()
     line_graph.axvline(x=x_value, color=colors.light, linestyle='dotted', linewidth=1, alpha=0.3)
 
+
 def hover(event):
     vis = annotation.get_visible()
     if event.inaxes == line_graph:
@@ -114,11 +117,20 @@ def hover(event):
                 if abs(x_value - x_datetime).total_seconds() < 86400:  # Adjust the threshold as needed
                     annotation.xy = (mdates.date2num(x_value), event.ydata)
                     update_annotation(x_value)
+
+                    # Check if the mouse is within the rightmost quarter of the graph
+                    if event.x > 0.90 * line_graph.get_window_extent().width:
+                        annotation.set_position((-130, 20))  # Move annotation to the left side
+                    else:
+                        annotation.set_position((20, 20))  # Default position
+
                     annotation.set_visible(True)
                     graph_frame.canvas.draw_idle()
                     return
     if vis:
-        annotation.set_visible(False)
+        # check whether the mouse is withing the bounds of the graph
+        if event.xdata is None and event.ydata is None:
+            annotation.set_visible(False)
         graph_frame.canvas.draw_idle()
 
 # Set the tick parameters to match the theme
@@ -126,14 +138,16 @@ line_graph.tick_params(axis='x', colors=colors.light)
 line_graph.tick_params(axis='y', colors=colors.light)
 
 # Set the figure background color to match the theme
-graph_frame.patch.set_facecolor(colors.dark)
-line_graph.set_facecolor(colors.dark)
-
-# table.pack(fill=BOTH, expand=YES, padx=10, pady=10)
+graph_frame.patch.set_facecolor(colors.bg)
+line_graph.set_facecolor(colors.bg)
 
 canvas = FigureCanvasTkAgg(graph_frame, master=app)
 canvas.draw()
 canvas.get_tk_widget().pack(fill=BOTH, expand=YES)
+buy_price_label = ttk.Label(app, text=f"{buy_values[-1]}", style=DANGER, font=("", 28, 'bold'))
+buy_price_label.pack(side=LEFT, padx=55, pady=25)
+sell_price_label = ttk.Label(app, text=f"{sell_values[-1]}", style=SUCCESS, font=("", 28, 'bold'))
+sell_price_label.pack(side=RIGHT, padx=55, pady=25)
 
 canvas.mpl_connect("motion_notify_event", hover)
 
