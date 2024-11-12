@@ -90,7 +90,7 @@ annotation = line_graph.annotate("", xy=(0,0), xytext=(20,20), textcoords="offse
 annotation.set_visible(False)
 
 def update_annotation(x_value):
-    texts = [f"{x_value}"]
+    texts = [f"{x_value.strftime('%d/%m/%Y')}"]
     for line in line_graph.get_lines():
         if line.get_label() in ["Mua vào", "Bán ra"]:
             x, y = line.get_data()
