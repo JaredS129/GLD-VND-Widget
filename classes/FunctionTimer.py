@@ -6,7 +6,7 @@ from ttkbootstrap import LIGHT
 class FunctionTimer:
     def __init__(self, app, callback):
         self.app = app
-        self.initial_time = 300  # 6 minutes
+        self.initial_time = 600  # 10 minutes
         self.callback = callback
         self.remaining_seconds = self.initial_time
         self.progress_bar = ttk.Progressbar(app, mode='determinate', style=LIGHT, maximum=100, length=150)
