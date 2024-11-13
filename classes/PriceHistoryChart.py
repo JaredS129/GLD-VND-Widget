@@ -3,7 +3,6 @@ matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from datetime import datetime
 from matplotlib.figure import Figure
-from ttkbootstrap.constants import *
 import matplotlib.dates as mdates
 from utils.format_num_to_vnd_str import format_num_to_vnd_str
 
@@ -27,7 +26,6 @@ class PriceHistoryChart:
         self.line_graph.plot(dates, sell_values, label='Bán ra', color=self.colors.success, linewidth=2)
 
         # Format the chart
-        self.line_graph.set_title(f"{self.gold_price_history.data[0].branch_name}: {self.gold_price_history.data[0].type_name} - 90 ngày qua", color=self.colors.light)
         self.line_graph.set_xlabel('Date', color=self.colors.light)
         self.line_graph.set_ylabel('Price', color=self.colors.light)
         self.line_graph.legend()
@@ -55,7 +53,7 @@ class PriceHistoryChart:
 
         canvas = FigureCanvasTkAgg(self.graph_frame, master=self.app)
         canvas.draw()
-        canvas.get_tk_widget().pack(fill=BOTH, expand=YES, pady=35)
+        canvas.get_tk_widget().pack(fill='both', expand=True, pady=35)
 
         canvas.mpl_connect("motion_notify_event", self.hover)
 

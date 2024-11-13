@@ -1,5 +1,7 @@
 import matplotlib
 import threading
+
+from classes.DropdownSelect import DropdownSelect
 from classes.PriceHistoryChart import PriceHistoryChart
 from classes.PriceLabels import PriceLabels
 matplotlib.use("TkAgg")
@@ -41,7 +43,16 @@ if isinstance(gold_price_history, ApiResponseError):
     print(gold_price_history.error)
 
 product_tree = build_product_tree(all_current_gold_prices)
-print(product_tree.branches)
+
+# Create a frame to hold the dropdown menus
+dropdown_frame = ttk.Frame(app)
+dropdown_frame.pack(fill='x', side='top', padx=10, pady=5)
+
+branch_select = DropdownSelect(dropdown_frame, [branch.name for branch in product_tree.branches], colors)
+product_select = DropdownSelect(dropdown_frame, [product.name for product in product_tree.branches[0].products], colors)
+
+branch_select.build()
+product_select.build()
 
 price_history_chart.build()
 
