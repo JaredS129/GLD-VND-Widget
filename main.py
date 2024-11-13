@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import ttkbootstrap as ttk
 from classes.PriceApi import PriceApi, ApiResponseError
 from classes.FunctionTimer import FunctionTimer
+from utils.build_product_tree import build_product_tree
 
 app = ttk.Window(themename='darkly')
 colors = app.style.colors
@@ -38,6 +39,9 @@ if isinstance(all_current_gold_prices, ApiResponseError):
 
 if isinstance(gold_price_history, ApiResponseError):
     print(gold_price_history.error)
+
+product_tree = build_product_tree(all_current_gold_prices)
+print(product_tree.branches)
 
 price_history_chart.build()
 

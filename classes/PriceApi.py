@@ -4,6 +4,9 @@ import json
 from classes.GoldPriceData import GoldPriceData
 import requests
 
+from classes.ProductTree import ProductTree, Branch, Product
+
+
 class ApiEndpoints:
     SJC_GOLD_PRICE_SERVICE = 'https://sjc.com.vn/GoldPrice/Services/PriceService.ashx'
 
@@ -25,7 +28,8 @@ class AllCurrentGoldPricesResponse:
     @staticmethod
     def from_json(json_data: dict) -> 'AllCurrentGoldPricesResponse':
         data = [GoldPriceData.from_json(item) for item in json_data['data']]
-        return AllCurrentGoldPricesResponse(success=json_data['success'], latest_date=json_data['latestDate'], data=data)
+        response = AllCurrentGoldPricesResponse(success=json_data['success'], latest_date=json_data['latestDate'], data=data)
+        return response
 
 class GoldPriceHistoryResponse:
     def __init__(self, success: bool, data: List[GoldPriceData]):
