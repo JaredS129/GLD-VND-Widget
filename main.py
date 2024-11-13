@@ -28,6 +28,11 @@ def refresh_state():
     price_history_chart.gold_price_history = updated_gold_price_history
     price_labels.refresh_state()
 
+def on_refresh():
+    refresh_state()
+    refresh_timer.remaining_seconds = refresh_timer.initial_time
+    refresh_timer.refresh_button.configure(state='normal', text=f'Làm Mới ({refresh_timer.remaining_seconds})')
+
 if isinstance(all_current_gold_prices, ApiResponseError):
     print(all_current_gold_prices.error)
 
@@ -40,6 +45,7 @@ refresh_timer = FunctionTimer(app, refresh_state)
 
 refresh_countdown_bar = refresh_timer.progress_bar
 refresh_button = refresh_timer.refresh_button
+refresh_button.configure(command=on_refresh)
 refresh_button.pack(expand=True, padx=20)
 refresh_countdown_bar.pack(expand=True, padx=20, pady=10)
 
