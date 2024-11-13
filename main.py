@@ -1,6 +1,6 @@
-from tkinter import Label
-
 import matplotlib
+from PIL.ImageOps import expand
+
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -10,17 +10,10 @@ from ttkbootstrap.tableview import Tableview
 from ttkbootstrap.constants import *
 import matplotlib.dates as mdates
 from classes.PriceApi import PriceApi, ApiResponseError, AllCurrentGoldPricesResponse, GoldPriceHistoryResponse
+from utils.format_num_to_vnd_str import format_num_to_vnd_str
 
 app = ttk.Window(themename='darkly')
 colors = app.style.colors
-
-col_data = [
-    'Date',
-    "Buy",
-    "Sell",
-]
-
-row_data = []
 
 all_current_gold_prices = PriceApi.get_all_current_gold_prices()
 
@@ -36,20 +29,8 @@ if isinstance(all_current_gold_prices, AllCurrentGoldPricesResponse):
 if isinstance(all_current_gold_prices, ApiResponseError):
     print(all_current_gold_prices.error)
 
-if isinstance(gold_price_history, GoldPriceHistoryResponse):
-    print('Fetched gold price history successfully')
-    for data in gold_price_history.data:
-        row_data.append([data.date, data.buy_value, data.sell_value])
-
 if isinstance(gold_price_history, ApiResponseError):
     print(gold_price_history.error)
-
-table = Tableview(
-    master=app,
-    coldata=col_data,
-    rowdata=row_data,
-    bootstyle=PRIMARY,
-)
 
 # Extract dates and prices for the line chart
 dates = [data.date for data in gold_price_history.data]
@@ -61,8 +42,8 @@ graph_frame = Figure(figsize=(7, 4), dpi=100)
 line_graph = graph_frame.add_subplot(111)
 
 # Plot the buy and sell values
-line_graph.plot(dates, buy_values, label='Mua vào', color=colors.danger)
-line_graph.plot(dates, sell_values, label='Bán ra', color=colors.success)
+line_graph.plot(dates, buy_values, label='Mua vào', color=colors.danger, linewidth=2)
+line_graph.plot(dates, sell_values, label='Bán ra', color=colors.success, linewidth=2)
 
 # Format the chart
 line_graph.set_title(f"{gold_price_history.data[0].branch_name}: {gold_price_history.data[0].type_name} - 90 ngày qua", color=colors.light)
@@ -91,12 +72,18 @@ annotation.set_visible(False)
 
 def update_annotation(x_value):
     texts = [f"{x_value.strftime('%d/%m/%Y')}"]
+    price_to_compare: float = 0
+    diff: float = 0
     for line in line_graph.get_lines():
         if line.get_label() in ["Mua vào", "Bán ra"]:
             x, y = line.get_data()
             if x_value in x:
                 index = list(x).index(x_value)
-                texts.append(f"{line.get_label()}: {y[index]}")
+                price = y[index]
+                texts.append(f"{line.get_label()}: {format_num_to_vnd_str(price)}")
+                diff = abs(price_to_compare - y[index])
+                price_to_compare = y[index]
+    texts.append(f"Chênh lệch: {format_num_to_vnd_str(diff)}")
     annotation.set_text("\n".join(texts))
     annotation.get_bbox_patch().set_facecolor(colors.light)
     annotation.get_bbox_patch().set_alpha(1)
@@ -144,10 +131,13 @@ line_graph.set_facecolor(colors.bg)
 canvas = FigureCanvasTkAgg(graph_frame, master=app)
 canvas.draw()
 canvas.get_tk_widget().pack(fill=BOTH, expand=YES)
-buy_price_label = ttk.Label(app, text=f"{buy_values[-1]}", style=DANGER, font=("", 28, 'bold'))
+difference = sell_values[-1] - buy_values[-1]
+difference_label = ttk.Label(app, text=f"{format_num_to_vnd_str(difference)}", style=LIGHT, font=("Verdana", 14))
+buy_price_label = ttk.Label(app, text=f"{format_num_to_vnd_str(buy_values[-1])}", style=DANGER, font=("Verdana", 28, 'bold'))
+sell_price_label = ttk.Label(app, text=f"{format_num_to_vnd_str(sell_values[-1])}", style=SUCCESS, font=("Verdana", 28, 'bold'))
 buy_price_label.pack(side=LEFT, padx=55, pady=25)
-sell_price_label = ttk.Label(app, text=f"{sell_values[-1]}", style=SUCCESS, font=("", 28, 'bold'))
 sell_price_label.pack(side=RIGHT, padx=55, pady=25)
+difference_label.place(relx=0.5, rely=0.91, anchor='center')
 
 canvas.mpl_connect("motion_notify_event", hover)
 
