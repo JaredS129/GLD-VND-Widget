@@ -14,8 +14,7 @@ from classes.PriceApi import PriceApi, ApiResponseError
 from classes.FunctionTimer import FunctionTimer
 from utils.build_product_tree import build_product_tree
 
-app = ttk.Window(themename='darkly', title='Giá Vàng')
-app.iconbitmap('gold.ico')
+app = ttk.Window(themename='darkly', title='Giá Vàng', iconphoto=None)
 colors = app.style.colors
 
 all_current_gold_prices = PriceApi.get_all_current_gold_prices()
