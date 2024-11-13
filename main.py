@@ -1,9 +1,12 @@
 import matplotlib
 import threading
 
-from classes.DropdownSelect import DropdownSelect
+from ttkbootstrap import LIGHT
+
 from classes.PriceHistoryChart import PriceHistoryChart
 from classes.PriceLabels import PriceLabels
+from utils.get_product_id_by_branch_and_product_name import get_product_id_by_branch_and_product_name
+
 matplotlib.use("TkAgg")
 from datetime import datetime, timedelta
 import ttkbootstrap as ttk
@@ -18,18 +21,19 @@ all_current_gold_prices = PriceApi.get_all_current_gold_prices()
 
 to_date = datetime.now()
 from_date = datetime.now() - timedelta(days=89)
-gold_price_id = 81
+product_id = 1
 
-gold_price_history = PriceApi.get_gold_price_history(gold_price_id, from_date, to_date)
+gold_price_history = PriceApi.get_gold_price_history(product_id, from_date, to_date)
 
 price_history_chart = PriceHistoryChart(app, gold_price_history, colors)
 price_labels = PriceLabels(app, gold_price_history, colors)
 
 def refresh_state():
-    updated_gold_price_history = PriceApi.get_gold_price_history(gold_price_id, from_date, to_date)
+    updated_gold_price_history = PriceApi.get_gold_price_history(product_id, from_date, to_date)
     price_labels.gold_price_history = updated_gold_price_history
     price_history_chart.gold_price_history = updated_gold_price_history
-    price_labels.refresh_state()
+    price_labels.rebuild()
+    price_history_chart.rebuild()
 
 def on_refresh():
     refresh_state()
@@ -47,12 +51,38 @@ product_tree = build_product_tree(all_current_gold_prices)
 # Create a frame to hold the dropdown menus
 dropdown_frame = ttk.Frame(app)
 dropdown_frame.pack(fill='x', side='top', padx=10, pady=5)
+branches_options = [branch.name for branch in product_tree.branches]
+products_options = [product.name for product in product_tree.branches[0].products]
 
-branch_select = DropdownSelect(dropdown_frame, [branch.name for branch in product_tree.branches], colors)
-product_select = DropdownSelect(dropdown_frame, [product.name for product in product_tree.branches[0].products], colors)
+def on_branch_select(event):
+    global product_id
+    selected_branch = event.widget.get()
+    new_products_options = [product.name for branch in product_tree.branches if branch.name == selected_branch for product in branch.products]
+    product_select['values'] = new_products_options
+    product_select.current(0)
+    product_id = get_product_id_by_branch_and_product_name(product_tree, selected_branch, new_products_options[0])
+    on_refresh()
 
-branch_select.build()
-product_select.build()
+def on_product_select(event):
+    global product_id
+    selected_product = event.widget.get()
+    product_id = get_product_id_by_branch_and_product_name(product_tree, branch_select.get(), selected_product)
+    on_refresh()
+
+branch_select = ttk.Combobox(dropdown_frame, style=LIGHT, width=50)
+branch_select['values'] = branches_options
+branch_select.current(0)
+
+branch_select.bind("<<ComboboxSelected>>", on_branch_select)
+
+product_select = ttk.Combobox(dropdown_frame, style=LIGHT, width=50)
+product_select['values'] = products_options
+product_select.current(0)
+
+product_select.bind("<<ComboboxSelected>>", on_product_select)
+
+branch_select.pack(side='left', fill='x', expand=True, padx=10, pady=5)
+product_select.pack(side='left', fill='x', expand=True, padx=10, pady=5)
 
 price_history_chart.build()
 
