@@ -55,7 +55,7 @@ class PriceHistoryChart:
 
         canvas = FigureCanvasTkAgg(self.graph_frame, master=self.app)
         canvas.draw()
-        canvas.get_tk_widget().pack(fill=BOTH, expand=YES)
+        canvas.get_tk_widget().pack(fill=BOTH, expand=YES, pady=35)
 
         canvas.mpl_connect("motion_notify_event", self.hover)
 
@@ -107,3 +107,45 @@ class PriceHistoryChart:
             if event.xdata is None and event.ydata is None:
                 self.annotation.set_visible(False)
             self.graph_frame.canvas.draw_idle()
+
+    def refresh_state(self):
+        self.line_graph.clear()  # Clear the existing plot
+
+        dates = [data.date for data in self.gold_price_history.data]
+        buy_values = [data.buy_value for data in self.gold_price_history.data]
+        sell_values = [data.sell_value for data in self.gold_price_history.data]
+
+        # Re-plot the buy and sell values
+        self.line_graph.plot(dates, buy_values, label='Mua vào', color=self.colors.danger, linewidth=2)
+        self.line_graph.plot(dates, sell_values, label='Bán ra', color=self.colors.success, linewidth=2)
+
+        # Re-format the chart
+        self.line_graph.set_title(
+            f"{self.gold_price_history.data[0].branch_name}: {self.gold_price_history.data[0].type_name} - 90 ngày qua",
+            color=self.colors.light)
+        self.line_graph.set_xlabel('Date', color=self.colors.light)
+        self.line_graph.set_ylabel('Price', color=self.colors.light)
+        self.line_graph.legend()
+
+        # Remove the x and y value labels
+        self.line_graph.set_xticklabels([])
+        self.line_graph.set_yticklabels([])
+
+        # Remove the black border
+        self.line_graph.spines['top'].set_visible(False)
+        self.line_graph.spines['right'].set_visible(False)
+        self.line_graph.spines['left'].set_visible(False)
+        self.line_graph.spines['bottom'].set_visible(False)
+
+        # Remove the ticks
+        self.line_graph.tick_params(axis='both', which='both', length=0)
+
+        # Set the tick parameters to match the theme
+        self.line_graph.tick_params(axis='x', colors=self.colors.light)
+        self.line_graph.tick_params(axis='y', colors=self.colors.light)
+
+        # Set the figure background color to match the theme
+        self.graph_frame.patch.set_facecolor(self.colors.bg)
+        self.line_graph.set_facecolor(self.colors.bg)
+
+        self.graph_frame.canvas.draw_idle()  # Redraw the canvas
